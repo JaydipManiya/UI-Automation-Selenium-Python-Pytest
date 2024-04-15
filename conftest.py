@@ -21,13 +21,15 @@ def initialize_browser(request, browser):
     """
     Fixture to initialize browser.
     """
-    global driver
+    driver = None
     options = Options()
     options.add_argument('--ignore-certificate-errors')
     if browser.lower() == "chrome":
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     elif browser.lower() == "firefox":
         driver = webdriver.Firefox(service=Service(GeckoDriverManager().install()))
+    else:
+        assert False, "Please pass valid browser value (chrome/firefox)."
 
     def function_finalizer():
         driver.quit()

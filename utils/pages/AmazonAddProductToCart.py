@@ -1,7 +1,13 @@
+"""
+Common methods to test Amazon Login, Search product and add product to cart scenarios.
+"""
+
 import time
+from selenium.webdriver.common.action_chains import ActionChains
 import utils.locators.amazon_add_product_to_cart as amazon_locators
 import utils.data.amazon_add_product_to_cart_data as amazon_data
-from selenium.webdriver.common.action_chains import ActionChains
+import utils.data.common_defines as cd
+from utils.lib.LoggerUtils import set_logger
 from .BasePage import BaseClass
 
 
@@ -11,6 +17,7 @@ class AmazonProductToCartPage(BaseClass):
         Initialize AmazonProductToCartPage class.
         """
         super().__init__(driver)
+        self.logger = set_logger(__name__)
 
     def login_to_amazon(self):
         """
@@ -21,25 +28,31 @@ class AmazonProductToCartPage(BaseClass):
         login_success = False
         err_msg = ""
         try:
-            print("Click on Account & Lists button")
-            account_list_ele = self.find_element(self.driver, "XPATH", amazon_locators.ACCOUNT_LIST_BTN)
-            # self.wait_element_to_be_visible(self.driver, "XPATH", amazon_locators.ACCOUNT_LIST_BTN)
-            print("found element")
+            self.logger.info("Click on Account & Lists button")
+            account_list_ele = self.find_element(self.driver, cd.LOCATE_BY_XPATH, amazon_locators.ACCOUNT_LIST_BTN)
             hover = ActionChains(self.driver).move_to_element(account_list_ele)
             hover.perform()
-            self.wait_element_to_be_clickable(self.driver, "XPATH", amazon_locators.SIGNIN_BTN).click()
+            self.wait_element_to_be_clickable(self.driver, cd.LOCATE_BY_XPATH, amazon_locators.SIGNIN_BTN).click()
 
-            print("Enter Signin email")
-            self.wait_element_to_be_visible(self.driver, "XPATH", amazon_locators.SIGNIN_EMAIL).send_keys(amazon_data.LOGIN_EMAIL)
+            self.logger.info("Enter Signin email")
+            if amazon_data.LOGIN_EMAIL == "<SET_ME>":
+                assert False, "Please set Amazon login credential LOGIN_EMAIL " \
+                              "in utils/data/amazon_add_product_to_cart_data.py file"
+            self.wait_element_to_be_visible(self.driver, cd.LOCATE_BY_XPATH, amazon_locators.SIGNIN_EMAIL).\
+                send_keys(amazon_data.LOGIN_EMAIL)
 
-            print("Click on Continue button")
-            self.wait_element_to_be_clickable(self.driver, "XPATH", amazon_locators.SIGNIN_CONTINUE_BTN).click()
+            self.logger.info("Click on Continue button")
+            self.wait_element_to_be_clickable(self.driver, cd.LOCATE_BY_XPATH, amazon_locators.SIGNIN_CONTINUE_BTN).click()
 
-            print("Enter Signin password")
-            self.wait_element_to_be_visible(self.driver, "XPATH", amazon_locators.SIGNIN_PASSWORD).send_keys(amazon_data.LOGIN_PASSWORD)
+            self.logger.info("Enter Signin password")
+            if amazon_data.LOGIN_PASSWORD == "<SET_ME>":
+                assert False, "Please set Amazon login credential LOGIN_PASSWORD " \
+                              "in utils/data/amazon_add_product_to_cart_data.py file"
+            self.wait_element_to_be_visible(self.driver, cd.LOCATE_BY_XPATH, amazon_locators.SIGNIN_PASSWORD).\
+                send_keys(amazon_data.LOGIN_PASSWORD)
 
-            print("Click on Submit button")
-            self.wait_element_to_be_clickable(self.driver, "XPATH", amazon_locators.SIGNIN_SUBMIT_BTN).click()
+            self.logger.info("Click on Submit button")
+            self.wait_element_to_be_clickable(self.driver, cd.LOCATE_BY_XPATH, amazon_locators.SIGNIN_SUBMIT_BTN).click()
             login_success = True
         except Exception as ex:
             err_msg = "Exception raised during signin, exception is : {}".format(ex)
@@ -55,11 +68,12 @@ class AmazonProductToCartPage(BaseClass):
         flag = False
         err_msg = ""
         try:
-            print("SEARCH {} ".format(amazon_data.PRODUCT_TO_SEARCH))
-            self.wait_element_to_be_clickable(self.driver, "XPATH", amazon_locators.SEARCH_BAR).send_keys(amazon_data.PRODUCT_TO_SEARCH)
+            self.logger.info("SEARCH {} ".format(amazon_data.PRODUCT_TO_SEARCH))
+            self.wait_element_to_be_clickable(self.driver, cd.LOCATE_BY_XPATH, amazon_locators.SEARCH_BAR).\
+                send_keys(amazon_data.PRODUCT_TO_SEARCH)
 
-            print("Click on search button")
-            self.wait_element_to_be_clickable(self.driver, "XPATH", amazon_locators.SEARCH_BTN).click()
+            self.logger.info("Click on search button")
+            self.wait_element_to_be_clickable(self.driver, cd.LOCATE_BY_XPATH, amazon_locators.SEARCH_BTN).click()
             flag = True
         except Exception as ex:
             err_msg = "Exception raised while searching product, exception is : {}".format(ex)
@@ -75,23 +89,18 @@ class AmazonProductToCartPage(BaseClass):
         flag = False
         err_msg = ""
         try:
-            print("Click on expected product")
+            self.logger.info("Click on expected product")
             current_window = self.driver.current_window_handle
-            print("Before, current window is : {}".format(current_window))
-            self.wait_element_to_be_clickable(self.driver, "XPATH", amazon_locators.PRODUCT_ELE).click()
+            self.wait_element_to_be_clickable(self.driver, cd.LOCATE_BY_XPATH, amazon_locators.PRODUCT_ELE).click()
             time.sleep(2)
             all_window = self.driver.window_handles
-            print("all windows are : {}".format(all_window))
             self.driver.switch_to.window(all_window[1])
-            # time.sleep(2)
             current_window = self.driver.current_window_handle
-            print("After window update, Current window is : {}".format(current_window))
-            print("Click on add to cart button")
-            self.wait_element_to_be_clickable(self.driver, "XPATH", amazon_locators.ADD_TO_CART_BTN).click()
+            self.logger.info("Click on add to cart button")
+            self.wait_element_to_be_clickable(self.driver, cd.LOCATE_BY_XPATH, amazon_locators.ADD_TO_CART_BTN).click()
             time.sleep(3)
             flag = True
         except Exception as ex:
             err_msg = "Exception raised while click on product and adding to cart, exception is : {}".format(ex)
 
         return flag, err_msg
-        # self.driver.switch_to.window(self.driver.window_handle[1])
